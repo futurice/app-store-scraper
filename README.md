@@ -1,3 +1,23 @@
+# Apple App Store Review Scraper (Futurice fork)
+
+This repository contains a fork of the original, but archived
+[`app-store-scraper`][original] package, updated by [Futurice][futurice] for
+compatibility with newer Python and `requests` package versions.
+
+This version is not published in PyPI (yet), but you can install it as a source
+package directly from GitHub:
+
+```sh
+pip install https://github.com/futurice/app-store-scraper/archive/refs/tags/v0.3.6.zip
+```
+
+The README of the original package is reproduced below.
+
+[original]: https://pypi.org/project/app-store-scraper/
+[futurice]: https://futurice.com/
+
+-----
+
 ![build](https://img.shields.io/github/workflow/status/cowboy-bebug/app-store-scraper/Build)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/cowboy-bebug/app-store-scraper/pulls)
 [![PyPI](https://img.shields.io/pypi/v/app-store-scraper)](https://pypi.org/project/app-store-scraper/)
@@ -17,11 +37,6 @@
 ```
 
 # Quickstart
-
-Install:
-```console
-pip3 install app-store-scraper
-```
 
 Scrape reviews for an app:
 ```python
