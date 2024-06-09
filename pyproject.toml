@@ -35,6 +35,7 @@ classifiers = [
     "Intended Audience :: Developers",
     "Topic :: Internet :: WWW/HTTP",
     "Topic :: Scientific/Engineering :: Information Analysis",
+    "Typing :: Typed",
 ]
 dependencies = [
     "requests>=2.23.0,<3",
@@ -45,12 +46,20 @@ Homepage = "https://github.com/futurice/app-store-scraper"
 Source = "https://github.com/futurice/app-store-scraper"
 
 [tool.hatch.version]
-path = "app_store_scraper/__version__.py"
-
-[tool.hatch.build.targets.sdist]
-include = [
-    "/app_store_scraper",
-]
+path = "src/app_store_scraper/__about__.py"
 
 [tool.hatch.envs.default]
 path = ".venv"
+dependencies = [
+    "faker",
+    "pytest",
+    "pytest-httpserver",
+    "ruff",
+]
+
+[tool.hatch.envs.hatch-test]
+extra-dependencies = [
+    "faker",
+    "pytest-httpserver",
+]
+
