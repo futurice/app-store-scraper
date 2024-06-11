@@ -38,7 +38,7 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
-    "requests>=2.23.0,<3",
+    "urllib3>=2.0.0,<3",
 ]
 
 [project.urls]
@@ -51,15 +51,15 @@ path = "src/app_store_scraper/__about__.py"
 [tool.hatch.envs.default]
 path = ".venv"
 dependencies = [
-    "faker",
-    "pytest",
-    "pytest-httpserver",
+    "black", 
+    "faker", 
+    "pytest", 
+    "pytest-httpserver", 
     "ruff",
 ]
 
 [tool.hatch.envs.hatch-test]
 extra-dependencies = [
-    "faker",
+    "faker", 
     "pytest-httpserver",
-]
-
+  ]

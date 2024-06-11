@@ -1,9 +1,10 @@
 from urllib.parse import urljoin
 from typing import Any
 
-import requests
+import urllib3
 
 from .__about__ import __version__
+from ._errors import AppNotFound, AppStoreError
 
 
 class AppStoreSession:
@@ -18,13 +19,25 @@ class AppStoreSession:
     _api_base_url = "https://amp-api-edge.apps.apple.com"
 
     def __init__(self):
-        self._session = requests.Session()
+        self._http = urllib3.PoolManager(
+            headers={
+                "Origin": self._web_base_url,
+                "User-Agent": f"app-store-scraper/{__version__}",
+            }
+        )
 
     def _get_app_page(self, app_id: str | int, country: str) -> str:
         url = urljoin(self._web_base_url, f"/{country}/app/_/id{app_id}")
-        response = requests.get(url)
-        response.raise_for_status()
-        return response.text
+        response = self._http.request("GET", url)
+
+        if response.status == 404:
+            raise AppNotFound(app_id, country)
+        elif response.status >= 400:
+            raise AppStoreError(
+                f"Fetching App Store page failed with status {response.status}"
+            )
+
+        return response.data.decode()
 
     def _get_api_resource(
         self,
@@ -33,14 +46,16 @@ class AppStoreSession:
         access_token: str,
         params: dict[str, str] | None = None,
     ) -> Any:
-        response = self._session.get(
+        response = self._http.request(
+            "GET",
             urljoin(self._api_base_url, url),
-            params=params,
-            headers={
-                "Authorization": f"Bearer {access_token}",
-                "Origin": self._web_base_url,
-                "User-Agent": f"app-store-scraper/{__version__}",
-            },
+            fields=params,
+            headers={"Authorization": f"Bearer {access_token}"},
         )
-        response.raise_for_status()
+
+        if response.status >= 400:
+            raise AppStoreError(
+                f"App Store API request failed with status {response.status}"
+            )
+
         return response.json()

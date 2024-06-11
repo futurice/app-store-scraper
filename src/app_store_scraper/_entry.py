@@ -79,22 +79,23 @@ class AppStoreEntry:
         if limit > 0:
             params["limit"] = str(limit)
 
+        query_string = urllib.parse.urlencode(params)
+        url = f"{path}?{query_string}"
         review_count = 0
 
-        while path:
-            result = self._session._get_api_resource(
-                path,
+        while url:
+            reviews = self._session._get_api_resource(
+                url,
                 access_token=self._api_access_token,
-                params=params,
             )
 
-            for item in result["data"]:
+            for item in reviews["data"]:
                 yield self._parse_app_review(item)
                 review_count += 1
                 if limit > 0 and review_count == limit:
                     return
 
-            path = result.get("next")
+            url = reviews.get("next")
 
     def _extract_api_access_token(self, page_html: str) -> str:
         if match := re.search(_APP_STORE_CONFIG_TAG_PATTERN, page_html):
@@ -115,11 +116,13 @@ class AppStoreEntry:
             review=attributes["review"],
             rating=attributes["rating"],
             is_edited=attributes["isEdited"],
-            developer_response=AppDeveloperResponse(
-                id=dev_response["id"],
-                body=dev_response["body"],
-                modified=datetime.fromisoformat(dev_response["modified"]),
-            )
-            if dev_response
-            else None,
+            developer_response=(
+                AppDeveloperResponse(
+                    id=dev_response["id"],
+                    body=dev_response["body"],
+                    modified=datetime.fromisoformat(dev_response["modified"]),
+                )
+                if dev_response
+                else None
+            ),
         )

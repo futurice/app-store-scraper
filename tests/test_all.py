@@ -6,17 +6,20 @@ from faker import Faker
 from pytest_httpserver import HTTPServer
 from werkzeug import Request, Response
 
-from app_store_scraper import AppReview, AppStoreEntry, AppStoreSession
+from app_store_scraper import AppNotFound, AppReview, AppStoreEntry, AppStoreSession
 
 APP_ID = "123456789"
 COUNTRY = "de"
+STORE_PAGE_PATH = f"/{COUNTRY}/app/_/id{APP_ID}"
+REVIEWS_API_PATH = f"/v1/catalog/{COUNTRY}/apps/{APP_ID}/reviews"
+
 API_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
 
 
 def mock_app_store_page(httpserver: HTTPServer):
     app_config = {"MEDIA_API": {"token": API_TOKEN}}
     app_config_encoded = urllib.parse.quote(json.dumps(app_config))
-    httpserver.expect_request(f"/{COUNTRY}/app/_/id{APP_ID}").respond_with_data(
+    httpserver.expect_request(STORE_PAGE_PATH).respond_with_data(
         f"""
         <!doctype html>
         <html>
@@ -33,13 +36,17 @@ def mock_app_store_page(httpserver: HTTPServer):
     )
 
 
+def mock_app_store_page_not_found(httpserver: HTTPServer):
+    httpserver.expect_request(STORE_PAGE_PATH).respond_with_data("", status=404)
+
+
 def mock_app_reviews(
     httpserver: HTTPServer,
     reviews: list[AppReview],
     *,
     page_size: int,
 ):
-    path = f"/v1/catalog/{COUNTRY}/apps/{APP_ID}/reviews"
+    path = REVIEWS_API_PATH
 
     def request_handler(request: Request) -> Response:
         offset = int(request.args.get("offset", 0))
@@ -99,11 +106,7 @@ def session(httpserver: HTTPServer) -> AppStoreSession:
     return session
 
 
-def test_basic(
-    httpserver: HTTPServer,
-    faker: Faker,
-    session: AppStoreSession,
-):
+def test_happy_path(httpserver: HTTPServer, faker: Faker, session: AppStoreSession):
     reviews = [fake_app_review(faker) for _ in range(10)]
 
     mock_app_store_page(httpserver)
@@ -115,11 +118,7 @@ def test_basic(
     assert retrieved_reviews == reviews
 
 
-def test_reviews_limit(
-    httpserver: HTTPServer,
-    faker: Faker,
-    session: AppStoreSession,
-):
+def test_reviews_limit(httpserver: HTTPServer, faker: Faker, session: AppStoreSession):
     reviews = [fake_app_review(faker) for _ in range(10)]
     limit = 5
 
@@ -130,3 +129,10 @@ def test_reviews_limit(
     retrieved_reviews = list(app.reviews(limit=limit))
 
     assert retrieved_reviews == reviews[:limit]
+
+
+def test_app_not_found(httpserver: HTTPServer, faker: Faker, session: AppStoreSession):
+    mock_app_store_page_not_found(httpserver)
+
+    with pytest.raises(AppNotFound):
+        AppStoreEntry(APP_ID, COUNTRY, session=session)
