@@ -1,15 +1,43 @@
-# Apple App Store Review Scraper (Futurice fork)
+# 🍏🔍 App Store Web Scraper
 
-This repository contains a fork of the original, but archived
-[`app-store-scraper`][original] package, updated by [Futurice][futurice] for
-compatibility with newer Python and `requests` package versions.
+`app-store-web-scraper` is a Python package for extracting reviews for iOS,
+iPadOS, macOS and tvOS apps from the web version of Apple's App Store. It is a
+rewrite of the [`app-store-scraper`][original] package with a streamlined API,
+improved performance and up-to-date dependencies.
 
-This version is not published in PyPI (yet), but you can install it as a source
-package directly from GitHub:
+## Installation
+
+At the moment, this package not yet available on PyPI, but can be installed
+directly from GitHub as a source package:
 
 ```sh
-pip install https://github.com/futurice/app-store-scraper/archive/refs/tags/v0.3.6.zip
+pip install https://github.com/futurice/app-store-scraper/archive/refs/tags/v0.4.0.zip
 ```
+
+## Basic Usage
+
+```python
+from app_store_scraper import AppStoreEntry
+
+# ...
+MINECRAFT_APP_ID = 479516143
+
+app = AppStoreEntry(app_id=MINECRAFT_APP_ID, country="gb")
+
+for review in app.reviews(limit=10):
+    print("-----")
+    print("ID:", review.id)
+    print("Rating:", review.rating)
+    print("Review:", review.review)
+```
+
+### API Details
+
+### How It Works
+
+### License
+
+-----
 
 The README of the original package is reproduced below.
 
@@ -33,7 +61,7 @@ The README of the original package is reproduced below.
  | | | | |_) | |_) | /\__/ / || (_) | | |  __/ /\__/ / (__| | | (_| | |_) |  __/ |
  \_| |_/ .__/| .__/  \____/ \__\___/|_|  \___| \____/ \___|_|  \__,_| .__/ \___|_|
        | |   | |                                                    | |
-       |_|   |_|                                                    |_|
+       |_|   |_|                                  
 ```
 
 # Quickstart
@@ -43,7 +71,7 @@ Scrape reviews for an app:
 from app_store_scraper import AppStore
 from pprint import pprint
 
-minecraft = AppStore(country="nz", app_name="minecraft")
+minecraft = AppStore(country="nz", app_name="minecraft", app_id=479516143)
 minecraft.review(how_many=20)
 
 pprint(minecraft.reviews)
